@@ -212,6 +212,15 @@ class AddCommentMacro(WikiMacroBase):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
+        broken_content_type = ('Content-Type', 'text/plain')
+        broken_content_length = ('Content-Length', '0')
+        content_types = filter(lambda x: x[0] == "Content-Type", req._outheaders)
+        content_lengths = filter(lambda x: x[0] == "Content-Length", req._outheaders)
+        if len(content_types)>1 and broken_content_type in content_types:
+            req._outheaders.remove(broken_content_type)
+        if len(content_lengths)>1 and broken_content_length in content_lengths:
+            req._outheaders.remove(broken_content_length)
+
         if hasattr(req, 'addcomment_raise'):
             self.env.log.debug("AddCommentMacro: Re-raising RequestDone from redirect")
             del(req.addcomment_raise)
